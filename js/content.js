@@ -53,6 +53,18 @@ window.SITE = {
       { label: "Background", value: "Retail operations & badminton coaching" },
       { label: "Long-term goal", value: "Travel the world" },
     ],
+    // Scoreboard under the hero. Numbers count up when they scroll into view.
+    // Only use real figures from your own work.
+    stats: [
+      { value: 84106, label: "Sensor readings processed", note: "WSH-Tech" },
+      { value: 10, label: "Global datasets integrated", note: "Diabetes Economy" },
+      { value: 5, label: "Projects on this site", note: "Data · IoT · Strategy" },
+      { value: 6, label: "Tournament results", note: "Badminton" },
+    ],
+    // Words in the scrolling band under the hero.
+    marquee: ["Data pipelines", "IoT systems", "Dashboards", "Machine learning", "Badminton", "Ultimate frisbee", "Running", "Football", "Backpacking"],
+    // Small passport-style stamp beside your photo (Singapore's coordinates).
+    stamp: { top: "Based in Singapore", bottom: "1.35°N · 103.82°E", centre: "SG" },
   },
 
   /* ----------------------------------------------------------------- ABOUT */
@@ -83,9 +95,59 @@ window.SITE = {
       "Automation",
       "Business strategy",
       "Badminton",
+      "Ultimate frisbee",
+      "Running",
+      "Football",
+      "Travel & backpacking",
       "Interior design & architecture",
       "Event planning",
-      "Travel",
+    ],
+  },
+
+  /* --------------------------------------------------------------- TOOLKIT
+     Tools you've actually used, each with where you used it. No ratings:
+     the evidence does the talking. Keep this in sync with your CV.
+     ----------------------------------------------------------------------- */
+  toolkit: {
+    intro: "No self-rated skill bars. Every tool here is tied to the project, course or job where I used it.",
+    groups: [
+      {
+        title: "Data & analytics",
+        items: [
+          { name: "Python", used: ["WSH-Tech gateway", "Diabetes data prep"] },
+          { name: "SQL / SQLite", used: ["WSH-Tech"] },
+          { name: "Power BI · DAX · Power Query", used: ["Diabetes Economy"] },
+          { name: "Excel / Google Sheets", used: ["Retail stock reports", "Diabetes master dataset"] },
+          { name: "CRISP-DM", used: ["Diabetes Economy"] },
+        ],
+      },
+      {
+        title: "IoT & embedded",
+        items: [
+          { name: "Arduino (C++)", used: ["Smart Classroom", "WSH-Tech"] },
+          { name: "Bluetooth Low Energy (Bleak)", used: ["WSH-Tech"] },
+          { name: "Sensors: IMU, KY-038, DHT11", used: ["WSH-Tech", "Smart Classroom"] },
+          { name: "Streamlit", used: ["WSH-Tech dashboard"] },
+        ],
+      },
+      {
+        title: "AI & cloud",
+        items: [
+          { name: "Machine & deep learning", used: ["NYP coursework"] },
+          { name: "NLP & computer vision", used: ["NYP coursework"] },
+          { name: "AWS (EC2, VPC, RDS, S3) · Flask", used: ["Cloud Computing coursework"] },
+          { name: "Ethical & responsible AI", used: ["NYP coursework"] },
+        ],
+      },
+      {
+        title: "Strategy & design",
+        items: [
+          { name: "Market research & KPI design", used: ["Shopee case study"] },
+          { name: "Budgeting & rollout planning", used: ["Shopee case study"] },
+          { name: "SketchUp", used: ["Interior design studio"] },
+          { name: "Customer service & inventory", used: ["URBNZD CO", "SunnyHills"] },
+        ],
+      },
     ],
   },
 
@@ -108,6 +170,8 @@ window.SITE = {
   projects: [
     {
       slug: "shopee-pickup-points",
+      order: 3,
+      stats: [{ value: "US$10M", label: "rollout plan" }, { value: 30, label: "urban adoption target", suffix: "%" }, { value: 4, label: "automated circuit breakers" }],
       title: "Scaling Shopee Pickup Points",
       year: "January 2026",
       type: "Individual project · Business strategy",
@@ -187,6 +251,8 @@ window.SITE = {
     },
     {
       slug: "global-diabetes-economy",
+      order: 2,
+      stats: [{ value: 10, label: "datasets, 7 providers" }, { value: 221, label: "countries in one panel" }, { value: "2.11bn", label: "cases forecast by 2045" }, { value: "81×", label: "funding gap exposed" }],
       title: "The Global Diabetes Economy",
       year: "August 2026",
       type: "Team project · Data Preparation & Visualisation (EG2A12)",
@@ -265,6 +331,8 @@ window.SITE = {
     },
     {
       slug: "wsh-tech-fall-slip-detection",
+      order: 1, // position on the site (1 = first)
+      stats: [{ value: 84106, label: "raw sensor readings" }, { value: 56387, label: "processed events" }, { value: 44, label: "BLE packets / second", prefix: "~" }, { value: 3, label: "SQLite databases" }],
       title: "Construction Fall & Slip Risk Detection",
       year: "2026",
       type: "Team project · Data Engineering Project (EG2A17)",
@@ -353,6 +421,8 @@ window.SITE = {
     },
     {
       slug: "smart-classroom-traffic-light",
+      order: 4,
+      stats: [{ value: 10, label: "sampling rate", suffix: " Hz" }, { value: 3, label: "alert tiers" }, { value: 2, label: "sensors fused" }],
       title: "Smart Classroom Traffic Light System",
       year: "2025",
       type: "IoT · Intelligent Control Systems · Sensor Automation",
@@ -413,6 +483,8 @@ window.SITE = {
     },
     {
       slug: "interior-design-studio",
+      order: 5,
+      stats: [{ value: "SketchUp", label: "design tool" }, { value: 2, label: "rooms shown" }],
       title: "Interior Design & Spatial Architecture",
       year: "Personal studio",
       type: "Self-taught side hobby",
@@ -577,7 +649,7 @@ window.SITE = {
       },
       {
         school: "Meridian Primary School",
-        dates: "2013 – 2017",
+        dates: "2015 – 2017",
         qualification: "Primary School",
         details: [],
       },
@@ -587,8 +659,28 @@ window.SITE = {
   /* ---------------------------------------------------------- BEYOND CODE */
   beyond: {
     intro:
-      "Competitive badminton keeps me disciplined, and volunteering keeps me connected to the people technology is meant to serve.",
-    achievementsTitle: "Competitive badminton",
+      "Sport keeps me disciplined and competitive, travel keeps me curious, and volunteering keeps me connected to the people technology is meant to serve.",
+    // The five panels in "Off the clock". `kind` picks the built-in field graphic:
+    // court | field | track | pitch | route. Keep the text true to you.
+    sports: [
+      { kind: "court", title: "Badminton", tag: "Competitive · Captain · Coach", text: "My main sport. Former school badminton captain, NYP CCA player, tournament competitor, and assistant coach for the CJC school team." },
+      { kind: "field", title: "Ultimate frisbee", tag: "Teamwork in motion", text: "A fast, self-refereed team sport. Every point depends on spacing, communication and trust." },
+      { kind: "track", title: "Running", tag: "One more lap", text: "Time to clear my head and build consistency, one run at a time." },
+      { kind: "pitch", title: "Football", tag: "Read the space", text: "Reading the game, finding space and moving as a unit." },
+      { kind: "route", title: "Travel & backpacking", tag: "Curious by default", text: "Exploring new places, meeting people and experiencing different cultures. It's also my long-term goal: to travel the world." },
+    ],
+    // The interactive badminton court at the top of the "On court" section.
+    court: {
+      kicker: "Competitor · Captain · Coach",
+      title: "Badminton is where I learned to *compete*.",
+      stats: [
+        { value: 6, label: "Tournament results" },
+        { value: "3rd", label: "Best finish · Aura League mixed doubles" },
+        { value: "SG · JB", label: "Competed in Singapore & Johor Bahru" },
+        { value: "Captain", label: "School team, Guangyang Secondary" },
+      ],
+    },
+    achievementsTitle: "Competitive record",
     achievements: [
       { result: "3rd Place", event: "Aura Badminton League", category: "Mixed Doubles", where: "Johor Bahru" },
       { result: "Quarter-finals", event: "Aura Badminton League", category: "Singles", where: "Johor Bahru" },

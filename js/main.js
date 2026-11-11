@@ -335,6 +335,23 @@
         </div>
       </div>
       <dl class="hero__meta fade-up" style="--d:4">${meta}</dl>`;
+
+    // Scrolling band under the hero (hero.marquee in content.js)
+    const mq = $('#marquee');
+    const bandWords = list(h.marquee);
+    if (mq && bandWords.length) {
+      const group = `<span class="marquee__group">${bandWords.map((w) => `<span class="marquee__item">${fmt(w)}</span><span class="marquee__dot" aria-hidden="true"></span>`).join('')}</span>`;
+      mq.innerHTML = `<div class="marquee__track">${group}${group}</div>`;
+    } else if (mq) mq.remove();
+  }
+
+  /** A stat value; plain numbers get data-count so they count up on scroll. */
+  function statValue(st) {
+    const pre = st.prefix || '', suf = st.suffix || '';
+    if (typeof st.value === 'number') {
+      return `<span data-count="${st.value}" data-prefix="${esc(pre)}" data-suffix="${esc(suf)}">${esc(pre)}${st.value.toLocaleString('en-US')}${esc(suf)}</span>`;
+    }
+    return `${esc(pre)}${fmt(st.value)}${esc(suf)}`;
   }
 
   function renderAbout() {
@@ -369,13 +386,16 @@
   function renderWork() {
     $('#work-body').innerHTML = S.projects.map((p, i) => {
       const tags = list(p.tags).map((t) => `<li class="tag">${fmt(t)}</li>`).join('');
+      const stats = (p.stats || []).slice(0, 2).map((s) => `<div><dt>${statValue(s)}</dt><dd>${fmt(s.label)}</dd></div>`).join('');
       return `<article class="card${p.featured ? ' card--lg' : ''} reveal" style="--d:${i % 3}">
-          <div class="card__media">
+          <div class="card__media" data-tilt>
             ${media(p, false)}
+            <span class="card__peek" aria-hidden="true">View project ${I.arrow}</span>
           </div>
           <div class="card__meta mono"><span>${pad(i + 1)}</span><span>${show(p.year) ? fmt(p.year) : ''}</span></div>
           <h3 class="card__title">${fmt(p.title)}</h3>
           <p class="card__summary">${fmt(p.summary)}</p>
+          ${stats ? `<dl class="card__stats">${stats}</dl>` : ''}
           ${tags ? `<ul class="tags" aria-label="Technologies">${tags}</ul>` : ''}
           <button class="card__cta" type="button" data-open="${esc(p.slug)}" aria-haspopup="dialog">
             <span>View project<span class="sr-only">: ${esc(plain(p.title))}</span></span>
@@ -423,6 +443,9 @@
       (schools ? `<div class="subhead reveal"><h3>Education</h3></div><div>${schools}</div>` : '');
   }
 
+  const SHUTTLE = '<svg class="i-shuttle" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 7l12 3.4v3.2L2 17z" fill="currentColor" opacity=".5"/><circle cx="17.5" cy="12" r="4" fill="currentColor"/></svg>';
+  const SHUTTLE_SVG = '<path class="court__skirt" d="M-30 -15L8 -6V6L-30 15Z"/><path class="court__feathers" d="M-30 -15L8 -6M-30 15L8 6M-30 -5L8 -2M-30 5L8 2"/><circle class="court__cork" cx="15" cy="0" r="10"/>';
+
   function renderBeyond() {
     const b = S.beyond;
     const mount = $('#beyond-body');
@@ -431,18 +454,49 @@
     if (intro) intro.innerHTML = fmt(b.intro);
     const ach = visible(b.achievements).map((a, i) => `
       <li class="ach reveal" style="--d:${i % 3}">
+        <span class="ach__no mono" aria-hidden="true">${pad(i + 1)}</span>
         <span class="ach__result">${fmt(a.result)}</span>
         <span class="ach__event">${fmt(a.event)}${show(a.category) ? `<span class="ach__cat">${fmt(a.category)}</span>` : ''}</span>
         <span class="ach__where mono">${show(a.where) ? fmt(a.where) : ''}</span>
+        <span class="ach__shuttle" aria-hidden="true">${SHUTTLE}</span>
       </li>`).join('');
+
+    // The court: real proportions (13.40 m × 6.10 m, 1 unit = 1 cm).
+    const ct = b.court || {};
+    const cstats = (ct.stats || []).map((s) => `<div class="court__stat"><dt>${statValue(s)}</dt><dd>${fmt(s.label)}</dd></div>`).join('');
+    const court = cstats || show(ct.title) ? `
+      <div class="court reveal" data-court>
+        <svg class="court__svg" viewBox="-60 -90 1460 790" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+          <g class="court__lines">
+            <rect x="0" y="0" width="1340" height="610" pathLength="1"/>
+            <path pathLength="1" d="M0 46H1340M0 564H1340M76 0V610M1264 0V610M472 0V610M868 0V610M0 305H472M868 305H1340"/>
+          </g>
+          <path class="court__net" d="M670 -40V650"/>
+          <path class="court__flight" id="court-flight" d="M250 430C470 -170 870 -170 1090 430C860 -60 480 -60 250 430"/>
+          <g class="court__shuttle">${SHUTTLE_SVG}
+            <animateMotion id="court-rally" dur="2.8s" begin="indefinite" repeatCount="indefinite" rotate="auto" calcMode="spline" keyPoints="0;0.58;1" keyTimes="0;0.5;1" keySplines=".35 0 .65 1;.35 0 .65 1"><mpath href="#court-flight"/></animateMotion>
+          </g>
+        </svg>
+        <div class="court__top">
+          <div>
+            ${show(ct.kicker) ? `<p class="mono court__kicker">${fmt(ct.kicker)}</p>` : ''}
+            ${show(ct.title) ? `<h3 class="court__title">${fmt(ct.title)}</h3>` : ''}
+          </div>
+          <div class="court__serve">
+            <button class="btn btn--sm court__btn" type="button" data-rally-toggle aria-pressed="false"><span data-rally-label>Pause</span> ${SHUTTLE}</button>
+            <p class="mono court__count" aria-live="polite"><span data-rally>0</span> <span data-rally-word>rallies</span></p>
+          </div>
+        </div>
+        ${cstats ? `<dl class="court__stats">${cstats}</dl>` : ''}
+      </div>` : '';
     const com = visible(b.community).map((c, i) => `
       <article class="vol reveal" style="--d:${i}">
         <p class="mono vol__org">${fmt(c.org)}</p>
         <h4 class="vol__title">${fmt(c.title)}</h4>
         <p class="vol__text">${fmt(c.description)}</p>
       </article>`).join('');
-    mount.innerHTML =
-      (ach ? `<div class="subhead reveal"><h3>${fmt(b.achievementsTitle || 'Achievements')}</h3></div><ol class="ach-list">${ach}</ol>` : '') +
+    mount.innerHTML = court +
+      (ach ? `<div class="subhead reveal"><h3>${fmt(b.achievementsTitle || 'Achievements')}</h3><p class="mono subhead__note">Badminton · tournament results</p></div><ol class="ach-list">${ach}</ol>` : '') +
       (com ? `<div class="subhead reveal"><h3>${fmt(b.communityTitle || 'Community')}</h3></div><div class="vol-grid">${com}</div>` : '');
   }
 
@@ -672,6 +726,7 @@
   let menuOpen = false;
   function initNav() {
     const nav = $('#nav');
+    const progress = $('.progress i', nav);
     let lastY = window.scrollY;
     let ticking = false;
     const onScroll = () => {
@@ -681,6 +736,9 @@
       if (y < lastY - 2) nav.classList.remove('is-hidden');
       lastY = y;
       ticking = false;
+      // reading-progress bar under the nav
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (progress) progress.style.transform = `scaleX(${max > 0 ? Math.min(1, Math.max(0, y / max)).toFixed(4) : 0})`;
     };
     window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
     onScroll();
@@ -1051,6 +1109,144 @@
     document.body.appendChild(bar);
   }
 
+  /* Section titles: each word rises into place when the title scrolls in. */
+  function splitTitles() {
+    $$('.section__title, .resume__title').forEach((el) => {
+      let i = 0;
+      const walk = (node) => {
+        Array.from(node.childNodes).forEach((ch) => {
+          if (ch.nodeType === 3) {
+            const frag = document.createDocumentFragment();
+            ch.textContent.split(/(\s+)/).forEach((part) => {
+              if (!part) return;
+              if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+              const w = document.createElement('span');
+              w.className = 'wd';
+              const inner = document.createElement('span');
+              inner.style.setProperty('--i', i++);
+              inner.textContent = part;
+              w.appendChild(inner);
+              frag.appendChild(w);
+            });
+            ch.replaceWith(frag);
+          } else if (ch.nodeType === 1) walk(ch);
+        });
+      };
+      walk(el);
+      el.classList.add('is-split');
+    });
+  }
+
+  /* Numbers count up from zero the first time they scroll into view. */
+  function initCount() {
+    const els = $$('[data-count]');
+    if (reduceMotion.matches || !('IntersectionObserver' in window)) return;
+    const put = (el, v) => { el.textContent = (el.dataset.prefix || '') + Math.round(v).toLocaleString('en-US') + (el.dataset.suffix || ''); };
+    const run = (el) => {
+      const target = Number(el.dataset.count);
+      const t0 = performance.now();
+      const step = (now) => {
+        const k = Math.min(1, (now - t0) / 1400);
+        put(el, target * (1 - Math.pow(1 - k, 3)));
+        if (k < 1) requestAnimationFrame(step); else put(el, target);
+      };
+      requestAnimationFrame(step);
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => { if (en.isIntersecting) { io.unobserve(en.target); run(en.target); } });
+    }, { threshold: 0.5 });
+    els.forEach((el) => { put(el, 0); io.observe(el); });
+  }
+
+  /* Project images tilt gently towards the cursor (mouse only, not with reduced motion). */
+  function initTilt() {
+    if (reduceMotion.matches || !window.matchMedia('(pointer: fine)').matches) return;
+    $$('[data-tilt]').forEach((el) => {
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        el.style.setProperty('--rx', (y * -5).toFixed(2) + 'deg');
+        el.style.setProperty('--ry', (x * 6).toFixed(2) + 'deg');
+      });
+      el.addEventListener('pointerleave', () => { el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg'); });
+    });
+  }
+
+  /* The badminton court: a continuous rally that starts when the court scrolls into
+     view, pauses when it leaves, and can be paused by the visitor. */
+  function initCourt() {
+    const court = $('[data-court]');
+    if (!court) return;
+    const svg = $('.court__svg', court);
+    const anim = $('#court-rally', court);
+    const flight = $('#court-flight', court);
+    const btn = $('[data-rally-toggle]', court);
+    const label = $('[data-rally-label]', court);
+    const countEl = $('[data-rally]', court);
+    const wordEl = $('[data-rally-word]', court);
+    const HALF = 1.4; // seconds per crossing (half of the 2.8 s loop)
+
+    if (reduceMotion.matches || !anim || !svg || typeof anim.beginElement !== 'function' || typeof svg.pauseAnimations !== 'function') {
+      court.classList.add('is-static');
+      if (btn) btn.closest('.court__serve').remove();
+      const sh = $('.court__shuttle', court);
+      if (sh) { sh.setAttribute('transform', 'translate(670 -15)'); if (anim) anim.remove(); }
+      return;
+    }
+
+    // Make the turnaround happen exactly at the far side: split time by arc length.
+    try {
+      const tmp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      tmp.setAttribute('d', 'M250 430C470 -170 870 -170 1090 430');
+      svg.appendChild(tmp);
+      const frac = tmp.getTotalLength() / flight.getTotalLength();
+      tmp.remove();
+      if (frac > 0 && frac < 1) anim.setAttribute('keyPoints', `0;${frac.toFixed(4)};1`);
+    } catch (e) { /* keep the default split */ }
+
+    let started = false, startAt = 0, userPaused = false, onScreen = false;
+    svg.pauseAnimations();
+    const sync = () => {
+      const playing = started && onScreen && !userPaused && !document.hidden;
+      if (playing) svg.unpauseAnimations(); else svg.pauseAnimations();
+      court.classList.toggle('is-paused', started && userPaused);
+    };
+    const start = () => {
+      if (started) return;
+      started = true;
+      court.classList.add('is-served');
+      svg.unpauseAnimations();
+      anim.beginElement();
+      startAt = svg.getCurrentTime();
+      sync();
+    };
+    setInterval(() => {
+      if (!started || !countEl) return;
+      const n = Math.max(0, Math.floor((svg.getCurrentTime() - startAt) / HALF));
+      if (String(n) !== countEl.textContent) {
+        countEl.textContent = n.toLocaleString('en-US');
+        if (wordEl) wordEl.textContent = n === 1 ? 'rally' : 'rallies';
+      }
+    }, 150);
+
+    btn && btn.addEventListener('click', () => {
+      if (!started) { start(); return; }
+      userPaused = !userPaused;
+      btn.setAttribute('aria-pressed', String(userPaused));
+      if (label) label.textContent = userPaused ? 'Play' : 'Pause';
+      sync();
+    });
+    document.addEventListener('visibilitychange', sync);
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([en]) => {
+        onScreen = en.isIntersecting;
+        if (onScreen && !started) setTimeout(start, 700);
+        else sync();
+      }, { threshold: 0.3 }).observe(court);
+    } else { onScreen = true; start(); }
+  }
   /* --------------------------------------------------------------- boot */
   renderChrome();
   renderHero();
@@ -1062,9 +1258,13 @@
   renderContact();
   renderFooter();
 
+  splitTitles();
   initTheme();
   initNav();
   initReveal();
+  initCount();
+  initTilt();
+  initCourt();
   initField();
   initCase();
   initForm();
